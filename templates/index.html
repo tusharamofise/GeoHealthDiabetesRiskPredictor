@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="showcase container purple lighten-3">
+    <div class="row center">
+        <div class="col s12">
+            <h2>GeoHealth Diabetes Risk Predictor</h2>
+            <p>ML Web App using Geo & Lifestyle Features</p>
+            <a href="{{ url_for('index') }}" class="btn btn-small purple white-text">Reset</a>
+            <a href="{{ url_for('preview') }}" class="btn btn-small white purple-text">View Dataset</a>
+        </div>
+    </div>
+</div>
+
+<section class="section section-signup">
+    <div class="container">
+        <div class="row">
+
+            <!-- Input Form -->
+            <div class="col s12 m4">
+                <div class="card-panel grey lighten-4">
+                    <form action="{{ url_for('analyse') }}" method="POST">
+                        {% for label, name, minv, maxv, val, step in [
+                            ('Age', 'Age', 0, 100, 25, 1),
+                            ('BMI', 'BMI', 10, 50, 22, 0.1),
+                            ('Exercise (0-10)', 'Exercise', 0, 10, 5, 1),
+                            ('Fast Food Density (1 - 100.000)', 'Fast_Food_Density', 1, 100.000, 10, 0.001),
+                            ('Green Space (sq km)', 'Green_Space', 1, 100.000, 5, 0.001),
+                            ('Air Quality Index', 'Air_Quality', 0, 500, 100, 1),
+                            ('Walkability Score', 'Walkability', 0, 100, 50, 1),
+                            ('Family History (0=No, 1=Yes)', 'Family_History', 0, 1, 0, 1)
+                        ] %}
+                        <div class="input-field">
+                            <p class="range-field">
+                                <label for="{{ name }}">{{ label }}</label>
+                                <input type="range" id="{{ name }}" name="{{ name }}" min="{{ minv }}" max="{{ maxv }}" value="{{ val }}" step="{{ step }}">
+                            </p>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Model Selector -->
+                        <div class="input-field">
+                            <select name="model_choice">
+                                <option value="" disabled selected>Select Model</option>
+                                <option value="logit_model" {% if model_selected == 'logit_model' %}selected{% endif %}>Logistic Regression</option>
+                                <option value="randomforest_model" {% if model_selected == 'randomforest_model' %}selected{% endif %}>Random Forest</option>
+                                <option value="svm_model" {% if model_selected == 'svm_model' %}selected{% endif %}>SVM</option>
+                            </select>
+                            <label>Select ML Algorithm</label>
+                        </div>
+
+                        <input type="submit" value="Predict" class="btn purple">
+                        <input type="reset" value="Clear" class="btn white black-text">
+                    </form>
+                </div>
+            </div>
+
+            <!-- Input Summary -->
+            <div class="col s12 m4">
+                <div class="card-panel purple lighten-4">
+                    <h6>Input Summary</h6>
+                    <p>Age: {{ Age }}</p>
+                    <p>BMI: {{ BMI }}</p>
+                    <p>Exercise: {{ Exercise }}</p>
+                    <p>Fast Food Density: {{ Fast_Food_Density }}</p>
+                    <p>Green Space: {{ Green_Space }}</p>
+                    <p>Air Quality: {{ Air_Quality }}</p>
+                    <p>Walkability: {{ Walkability }}</p>
+                    <p>Family History: {{ Family_History }}</p>
+                    <p>Model Chosen: {{ model_selected }}</p>
+                    <p>Model Accuracy: {{ selected_model_accuracy }}%</p>
+                </div>
+            </div>
+
+            <!-- Prediction Result -->
+            <div class="col s12 m4">
+                <div class="card-panel center">
+                    <h5>Prediction</h5>
+                    <div class="collection">
+                        <p class="collection-item purple white-text">Result: {{ result_prediction }}</p>
+                    </div>
+                    {% if result_prediction == [1] %}
+                        <p class="red-text">The person is at risk of the disease</p>
+                        <img src="{{ url_for('static', filename='diabetes.jpg') }}" width="200px">
+                    {% elif result_prediction == [0] %}
+                        <p class="green-text">The person is not at risk</p>
+                        <img src="{{ url_for('static', filename='no_diabetes.jpg') }}" width="200px">
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}
